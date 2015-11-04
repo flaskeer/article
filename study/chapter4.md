@@ -10,7 +10,7 @@ J. Landin所言：“（闭包是）可以帮你消化λ演算的一点语法糖
 pickEven()方法是一个高阶函数，即以函数为参数，或返回一个函数作为结果的函数①。该
 方法对值进行迭代（和前面一样），但不同的是它将值发送给了一个代码块。在Groovy中，我们
 称这种匿名代码块为闭包（Closure），
-
+```groovy
  def pickEven(n,block){
     for(int i = 2;i <= n;i++){
         block(i)
@@ -18,13 +18,13 @@ pickEven()方法是一个高阶函数，即以函数为参数，或返回一个�
 }
 pickEven(10,{print it + " "})
 2 3 4 5 6 7 8 9 10
-
+```
 变量block保存了一个指向闭包的引用。可以像传递对象一样传递闭包。变量名没必要一定
 命名为block，可以使用任何合法的变量名。当调用pickEven()方法时，现在可以像前面代码中
 演示的那样向其发送代码块。代码块（{}内的代码）被传给形参block，就像把值10传给变量n。
 在Groovy中，想传递多少闭包就可以传递多少。例如，方法调用的第一个、第三个和最后一个实
 参都可以是闭包。如果闭包是最后一个实参，可以用下面这种优雅的语法：
-
+```groovy
 pickEven(10) {println it}
 2
 3
@@ -35,10 +35,11 @@ pickEven(10) {println it}
 8
 9
 10
-
+```
 
 代码块中的it是什么呢？如果只向代码块中传递一个参数，那么可以使用it这个特殊的变量
 名来指代该参数。如果你喜欢，也可以像下面的例子这样，用其他名字代替it：
+```groovy
 pickEven(10) {evenNumber -> println evenNumber}
 
 total = 0
@@ -52,7 +53,7 @@ pickEven(10) {println total += it}
 35
 44
 54
-
+```
 除了语法上的优雅，闭包还为函数将部分实现逻辑委托出去提供了一种简单、方便的方式。
 前面示例中的代码块所做的事情，要比我们更早之前看到的代码块多。它将触角伸到了
 pickEven()的调用者的作用域之内，使用了变量product。这是闭包的一个有趣特性。闭包是
@@ -106,8 +107,8 @@ totalSelectValues()方法从1迭代到n，它会对每个值调用闭包，以�
 与调用时直接创建的闭包不同，这种预先定义的闭包可以在多个调用中复用。顺便插一句，不费
 吹灰之力，这个例子就实现了策略模式。
 
-
-> class Equipment{
+```groovy
+ class Equipment{
     def calculator
     Equipment(calc) {calculator = calc}
     def simulate(){
@@ -124,7 +125,7 @@ Running simulation
 calculator 1
 Running simulation
 calculator 2
-
+```
 对于单参数的闭包，it是该参数的默认名称。只要知道只传入一个参数，就可以使用it。如
 果传入的参数多于一个，就需要通过名字一一列出了
 
@@ -132,21 +133,23 @@ calculator 2
 在调用闭包closure时，tellFortune()方法提供了两个参数：一个Date实例，一个表示运
 势信息的String。该闭包分别用name和fortune引用它们。符号->将闭包的参数声明与闭包主
 体分隔开来
-> def tellFortune(closure){
+```groovy
+ def tellFortune(closure){
     closure  new Date("09/22/1223"),"your day is filled with ceremony"
 }
 tellFortune(){date,fortune ->
     println "Fortune for ${date} is  '${fortune}'"
 }
 Fortune for Fri Sep 22 00:00:00 CST 1223 is  'your day is filled with ceremony'
-
+```
 
 如果为参数选择了表现力好的名字，通常可以避免定义类型。后面会看到，在元编程中，我
 们可以使用闭包来覆盖或替代方法，而在那种情况下，类型信息对于确保实现的正确性非常重要。
-
-> new FileWriter('out.txt').withWriter{writer ->
+```groovy
+ new FileWriter('out.txt').withWriter{writer ->
     writer.write('a')
 }
+```
 使用Groovy添加的withWriter()方法重写这段代码。当从闭包返回时，withWriter()会自
 动刷新（flush）并关闭这个流。
 
@@ -157,6 +160,7 @@ Method模式，这是一个Smalltalk模式，Kent Beck的Smalltalk Best Practice
 把对该块的调用夹到对那对方法的调用之间。即先调用第一个方法，然后调用该块，最后调
 用第二个方法。方法的使用者不必担心这对动作，它们会自动被调用。我们甚至可以在
 Execute Around方法内处理异常。
+```groovy
 def static use(closure){
     def r = new Resource()
     try{
@@ -172,7 +176,7 @@ Resource.use{ res ->
     res.write()
 
 }
-
+```
 调用一个函数或方法会在程序的执行序列中创建一个新的作用域。我们会在一个入口点（方
 法最上面的语句）进入函数。在方法完成之后，回到调用者的作用域。
 协程（Coroutine）则支持多个入口点，每个入口点都是上次挂起调用的位置。我们可以进入
@@ -182,8 +186,8 @@ Resource.use{ res ->
 协程对于实现某些特殊的逻辑或算法非常方便，比如用在生产者－消费者问题中。生产者会
 接收一些输入，对输入做一些初始处理，通知消费者拿走处理过的值做进一步计算，并输出或存
 储结果。消费者处理它的那部分工作，完成之后通知生产者以获取更多输入。
-
-> def iterate(n,closure){
+```groovy
+ def iterate(n,closure){
     1.upto(n){
         println "In iterate with value ${it}"
         closure(it)
@@ -206,7 +210,7 @@ In closure total so far is 6
 In iterate with value 4
 In closure total so far is 10
 Done
-
+```
 闭包可能不接受任何形参，也可能接受多个形参。每次调用一个闭包时，它会期望我们为其
 每一个形参传入相应的实参。然而，如果在多次调用之间，有一个或多个实参是相同的，传参就
 会变得枯燥乏味。预先绑定一些闭包形参可以缓解这种痛苦。
@@ -218,8 +222,8 @@ curry()时，就是要求预先绑定某些形参。在预先绑定了一个形�
 为这个形参提供实参了。如图4-2所示，方法调用现在可以接受较少的参数。这有助于去掉方法
 调用中的冗余或重复，
 
-
-> def tellFortunes(closure){
+```groovy
+ def tellFortunes(closure){
     Date date = new Date("09/22/1223")
     postFortune = closure.curry(date)
     postFortune "your day is filled with ceremony"
@@ -231,7 +235,7 @@ tellFortunes(){date,fortune ->
 }
 Fortune for Fri Sep 22 00:00:00 CST 1223 is 'your day is filled with ceremony'
 Fortune for Fri Sep 22 00:00:00 CST 1223 is 'They are features.not bugs'
-
+```
 tellFortunes()方法多次调用了一个闭包。该闭包接受两个形参。因此，每次调用
 tellFortunes()时都要提供第一个参数date。作为一种选择，可以以date作为一个参数来调用
 curry()方法，实现形参date的科里化。postFortune保存着科里化之后的闭包的引用，它已经
@@ -248,8 +252,8 @@ curry()方法，实现形参date的科里化。postFortune保存着科里化之�
 
 可以确定一个闭包是否已经提供。如果尚未提供，比如说是一个算法，我们可以决定使用该
 算法的一个默认实现来代替调用者未能提供的特殊实现
-
-> def doSomething(closure){
+```groovy
+ def doSomething(closure){
     if(closure){
         closure()
     }else{
@@ -261,7 +265,7 @@ doSomething() {println "Use specialized implementation"}
 doSomething()
 Use specialized implementation
 Using default implemention
-
+```
 this、owner和delegate是闭包的三个属性，用于确定由哪个对象处理该闭包内的方法调用。
 一般而言，delegate会设置为owner，但是对其加以修改，可以挖掘出Groovy的一些非常好的元
 编程能力。我们来观察一下闭包的这三个属性：
@@ -272,8 +276,8 @@ this、owner和delegate是闭包的三个属性，用于确定由哪个对象处
 只需利用输入规模较小的相同问题的解决方案来组合出最终解决方案，这点很酷。尽管存在这些
 优势，但是程序员往往对递归解决方案敬而远之。在输入规模较大的情况下，潜在的
 StackOverflowError威胁，使得最优秀的程序员都有可能望而却步。
-
-> def factorial(BigInteger number){
+```groovy
+ def factorial(BigInteger number){
     if(number == 1) 1 else number * factorial(number - 1)
 }
 try{
@@ -284,7 +288,7 @@ try{
 }
 factorial of 4 is 120
 caught java.lang.StackOverflowError
-
+```
 这里定义了一个名为factorial的变量，并将一个闭包赋给它。该闭包接受两个参数：一个
 是number，要计算的就是它的阶乘；一个是theFactorial，它表示通过这个递归计算出的部分
 结果。在闭包中，如果给定的number是1，就返回theFactorial的值作为结果。 否则，就通过
@@ -298,7 +302,8 @@ trampoline()方法时，该闭包会直接返回一个特殊类TrampolineClosure
 的实例。这种简单的技术在背后将递归调用转换成了一个简单的迭代。
 这种递归之所以叫作尾递归，是因为方法中最后的表达式或者是结束递归，或者是调用自身。
 相反，在直接递归计算阶乘时，最后的表达式调用的是*，即乘法操作符。
-> def factorial
+```groovy
+def factorial
 factorial = {int number,BigInteger theFactorial ->
     number == 1? theFactorial:
         factorial.trampoline(number-1,number*theFactorial)
@@ -306,7 +311,7 @@ factorial = {int number,BigInteger theFactorial ->
 println "factorial of 5 is ${factorial(5,1)}"
 println "Number results is ${factorial(6000,1).bitCount()}"
 factorial of 5 is 120
-
+```
 上一节介绍了一种可以使递归调用更高效地使用内存的技巧。递归本质上是一种使用子问题
 的解决方案来解决问题本身的方式。这种技巧有一个变种（被奇怪地命名为动态规划）①，将问
 题分解为可以多次重复解决的若干部分。在执行期间，我们将子问题的结果保存下来，当调用到
