@@ -12,16 +12,16 @@
 作为Java程序员，我们严重依赖接口。我们推崇“契约式设计”（Design By Contract），在这
 种设计中，接口定义了交流的契约，类负责实现并遵守这些契约——参见Bertrand Meyer的Object-
 Oriented Software Construction[Mey97]一书。
-
+```groovy
 def takeHelper(helper){
     helper.helpMoveThing()
 }
-
+```
 takeHelp()接受一个helper，但是没有指定其类型，这样类型默认为Object。此外，这里
 在它上面调用了helpMoveThings()方法。这就是能力式设计（Design By Capability）①。不同于
 让helper遵守某些显式的接口，我们利用了对象的能力——依赖一个隐式的接口。这被称作鸭
 子类型，它基于这一观点：“如果它走路像鸭子，叫起来也像鸭子，那它就是一只鸭子。”②
-
+```groovy
 class Man{
     void helpMoveThing(){
         println "Man's helping"
@@ -29,6 +29,7 @@ class Man{
 }
 
 takeHelper(new Man())   // Man's helping
+```
 我们不需要我们不需要扩展任何公共类，也不需要实现任何公共接口，不过借助动态特性 我们就可以实现
 
 例如，在一个订单处理系统中，可以使用一个模拟（Mock）对象毫不
@@ -62,7 +63,7 @@ Collection<String>类型的col引用的是同一实例。我们向lst中加入3�
 移除操作去掉了列表中的第一个元素。现在我们想调用col.remove(0)来移除另一个元素。然而，
 Collection接口的remove()方法想接收的是一个Object，所以Java把0装箱成一个Integer。因
 为这个Integer实例不是列表中的元素，所以这个方法调用没有移除掉任何东西。
-
+```groovy
 ArrayList<String> lst = new ArrayList<>();
 Collection<String> col = lst;
 lst.add("one")
@@ -77,14 +78,15 @@ col.size() => 2
 //groovy
 lst.size() => 1
 col.size() => 1
+```
 groovy不会招惹装箱这种麻烦
 
 其实，完全可以让Groovy自己识别正确的类型，并确保调用的方法和访问的属性在该类型上
 是合法的。可以使用特殊的注解@TypeChecked，让Groovy去检查这些种错误，这个注解可以用
 于类或单个方法上。如果用于一个类，则类型检查会在该类中所有的方法、闭包和内部类上执行。
 如果用于一个方法，则类型检查仅在目标方法的成员上执行。
-
-> def shout(String str){
+```groovy
+ def shout(String str){
     println "Print in uppercase"
     println str.toUpperCase()
     println "again"
@@ -113,8 +115,11 @@ try{
     println "failed..."
 }
 org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+```
+
 >动态向string的实例添加方法
-> def shoutString(String str){
+```groovy
+ def shoutString(String str){
     println str.shout()
 }
 str = 'hello'
@@ -127,15 +132,15 @@ HELLO
 }
 printInReverse 'hello'
 olleh
-
+```
 要利用静态类型检查，必须要指明方法和闭包的形参类型。能够在形参上调用的方法，被限
 制为该类型在编译时已知支持的方法。Groovy会推断闭包的返回类型，并相应地执行类型检查，
 所以不必担心此类细节。
 
 与Java相比，Groovy的类型检查有一个优势。如果使用instanceOf检查类型，在使用该类
 型特定的方法或属性时，并不需要执行强制转换，
-
-> def use(Object instance){
+```groovy
+ def use(Object instance){
     if(instance instanceof String){
         println instance.length()
     }else{
@@ -146,7 +151,7 @@ use 'hello'
 use 2
 5
 2
-
+```
 Groovy元编程和动态类型的优点显而易见，但是这些优点需要以性能为代价。性能的下降与
 代码、所调用方法的个数等因素相关。当不需要元编程和动态能力时，与等价的Java代码相比，
 性能损失可能高达10%。Java 7的InvokeDynamic特性就旨在缓解这种痛苦，但是对于使用老版本
