@@ -136,7 +136,7 @@ C-P设计中，所有的消费者只共享一个工作队列，在窃取工作�
 interrupt方法，用来中断一个线程，或者查询某线程是否被中断。每一个线程都有一个布尔类型的属性。这个属性代表了线程的中断状态。
 
 //恢复中断状态
-```
+```java
 Thread.currentThread.intterupt();
 ```
 Synchronizer都享有类似的结构特性，它们封装状态，而这些状态决定着线程执行到在某一点时是通过还是被迫等待，它们还提供了操控状态的方法，以及高效的等待着Synchronizer进入到期望状态的方法。
@@ -152,7 +152,7 @@ TestHarness中创建两个线程，并发的执行给定的任务。使用两个
 FutureTask实现描述了一个抽象的可以携带结果的计算。是通过Callable实现的。有3个状态。等待，运行，完成。完成包括所有计算以及以任意的方式结束。包括正确结束，取消和异常。一旦futuretask进入完成状态，会永远停止在这个状态。
 
 future.get依赖于任务状态。如果已经完成，get可以立刻得到返回结果，否则会被阻塞直到任务转入完成状态。然后返回结果或者抛出异常。
-```
+```java
 public class Preloader{
 	private final FutureTask<ProductInfo> future = 
 	   new FutureTask<ProductInfo>(new Callable<ProductInfo>{
@@ -184,7 +184,7 @@ Exchanger是关卡的另一种形式，它是一种两步关卡，在关卡点�
 交换的时机取决于应用程序的响应需求，最简单的方案是当写入任务的缓冲写满就发生交换，并且当清除任务的缓冲清空后也发生交换，这样做使交换的次数最少，但是如果新数据的到达率不可预测，处理一些数据会发生延迟。另一个方案是缓冲满了就发生交换，但是当缓冲部分充满却已经存在了特定长时间时，也会发生交换。
 
 NCPU/CPUT+1个线程会产生最优吞吐量。
-```
+```java
 public class Memorizer<A,V> implements Commputable<A,V>{
 	private final Map<A,Future<V>> cache = new 
 	    ConcurrentHashMap<>();
@@ -238,7 +238,7 @@ TimerTask抛出未检查的异常，Timer会产生无法预料的行为。
 
 Future:任务的状态决定了get方法的行为，如果任务已经完成，get会立即返回或者抛出一个Exception，如果任务没有完成，get会阻塞直到它完成，如果任务抛出了异常，get会把该异常封装成ExecutionException，然后重新抛出。
 FutureTask实现了Runnable。所以既可以提交给Executor执行，也可以调用run方法运行。
-```
+```java
 void renderPage(){
 	Callable<List<ImageData>> task = new Callable<>(){
 	//...
@@ -257,7 +257,7 @@ void renderPage(){
 ```
 
 CompletionService整合了Executor和BlockingQueue的功能，可以将callable任务提交给它去执行，使用类似队列的take和poll方法，结果完整时获得这个结果吗，像个打包的future，ExecutorCompletionService是一个实现类，将计算任务委托给一个executor
-```
+```java
  void  renderPage(){
    CompletionService = new ExecutorCompletionService(executor);
    completionService.submit(new Callable(){
@@ -270,7 +270,7 @@ CompletionService整合了Executor和BlockingQueue的功能，可以将callable�
  renderImage(imageData);
 ```
 超时的Future
-```
+```java
 Future<Ad> f = exec.submit(new FetchAdTask());
 long timeLeft = endNanos - System.nanoTime();
 ad = f.get(timeLeft,NANOSECONDS);
@@ -282,7 +282,7 @@ invokeAll将多个任务提交到一个ExecutorService，并且获得其结果�
 
 静态的interrupted应该小心使用，他会清除并发线程的中断状态。如果你用了interrupted，并且它返回了true，必须对其进行处理，除非你想掩盖这个中断，可以抛出InterruptedException，或者通过再次调用interrupt保存中断状态。
 中断通常是实现取消最明智的选择。
-```
+```java
 public static void timeRun(Runnable r,long timeout,TimeUnit unit){
 	Future<?> task = taskExec.submit(r);
 	try{
@@ -307,13 +307,13 @@ public void start(){
 
 线程池中如果一个任务依赖于其他任务的执行，就可能产生死锁，
 对于一个单线程化的executor，一个任务将另一个任务提交到相同的executor,并等待新提交的任务的结果，这总会引发死锁。如果所有线程执行的任务都阻塞在线程池中，等待着仍然处于同一工作队列的其他任务，那么会发生线程饥饿死锁。
-```
+```java
 int N_CPU = Runtime.getRuntime().availableProcessors();
 ```
 newFixedThreadPool为请求的池设置了核心池的大小和最大池的大小，而且池永远不会超时，newCachedThreadPool工厂将最大池的大小设置Integer.MAX_VALUE，核心池的大小设置为零，超时设置为一分钟。
 
 对于庞大或者无限的池，可以使用synchronousQueue，完全绕开队列。
-```
+```java
 void processInParallel(Executor exec,List<Element> elements){
 	for(final Element e:elements){
 		exec.execute(new Runnable(){
@@ -375,7 +375,7 @@ thread.join(LOCKUP_DETECT_TIMEOUT);定时的join能确保测试完成。
 
 
 使用Thread.yield()激发更多的上下文转换
-```
+```java
 public class BarrierTimer implements Runnable{
 	private boolean started;
 	private long startTime,endTime;
@@ -407,7 +407,7 @@ public class BarrierTimer implements Runnable{
 使用tryLock试图获得两个锁，如果不能同时获得两个，就回退，重新尝试，休眠时间由一个特定的组件管理，并由一个随机组件减小活锁发生的可能性。如果一定时间没有能获得所需要的锁，就返回一个失败状态。
 
 定时锁能够在时间预算内设定相应的超时，如果活动在期待的时间内没能获得结果，这个机制使得程序能够提前返回，使用内部锁一旦开始请求，锁就不能停止了。
-```
+```java
 if(!lock.tryLock(nanosToLock,NANOSECONDS)){
 	return false;
 }
@@ -443,7 +443,7 @@ Threa.yield可以给调度器一个提示，我现在可以让出一定的时间
 Object的wait,notify,notifyAll构成了内部条件队列的API
 一个对象的内部锁与它的内部条件队列是相关的。为了调用对象中任一个条件队列方法，必须持有对象锁，因为等待基于状态的条件机制必须和维护状态一致性紧密绑定在一起。除非你能检查状态，否则你不能等待条件。同时除非你能改变状态。否则你不能从条件等待队列中释放其他的线程。
 Object.wait会自动释放锁，请求OS挂起当前线程，让其他线程获得该锁进而修改对象的状态，当它被唤醒时，它会在返回前重新获得锁。
-```
+```java
 public synchronized void put(V v){
 	while(isFull())
 		wait();
@@ -462,7 +462,7 @@ public synchronized V take(){
 wait会释放锁，并阻塞当前线程，然后等待，直到特定时间超时过后，线程被中断或被通知唤醒，线程被唤醒后。wait会在返回运行前重新请求锁，一个从wait方法中唤醒的线程，在重新请求锁的过程没有任何特殊的优先级。
 
 notifyAll唤醒后，控制流重新进入调用wait代码，重新请求与条件队列相关联的锁，在重新请求锁的时刻又再次变为假
-```
+```java
 while(!conditionPredicate()){
 	lock.wait();
 }
@@ -494,7 +494,7 @@ volatile不会引起上下文切换和线程调度。但是不能用于构建原
 
 CAS--比较并交换，有3个操作数，内存位置V，旧的预期值A和新值B。当且仅当V符合旧预期值A时，CAS用新值B原子化的更新V的值，否则他什么都不做，都会返回V的知识值。（compare-and-set）
 是一项乐观技术。
-```
+```java
 public class ConcurrentStack<E> {
 	AtomicReference<Node<E>> top = new AtomicReference<>();
 	public void push(E item){
