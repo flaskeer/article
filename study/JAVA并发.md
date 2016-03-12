@@ -136,8 +136,9 @@ C-P设计中，所有的消费者只共享一个工作队列，在窃取工作�
 interrupt方法，用来中断一个线程，或者查询某线程是否被中断。每一个线程都有一个布尔类型的属性。这个属性代表了线程的中断状态。
 
 //恢复中断状态
+```
 Thread.currentThread.intterupt();
-
+```
 Synchronizer都享有类似的结构特性，它们封装状态，而这些状态决定着线程执行到在某一点时是通过还是被迫等待，它们还提供了操控状态的方法，以及高效的等待着Synchronizer进入到期望状态的方法。
 
 latch是一种synchronizer，它可以延迟线程的进度直到线程到达终止状态。一个闭锁工作起来就像一道大门，直到闭锁达到终点之前，门一直是关闭的，没有线程能够通过，在终点状态到来的时候，门开了，允许所有的线程都通过，一旦闭锁到达了终点状态，它就不能够再改变状态了。闭锁可以用来确保特定活动直到其他活动完成时才发生。
@@ -151,6 +152,7 @@ TestHarness中创建两个线程，并发的执行给定的任务。使用两个
 FutureTask实现描述了一个抽象的可以携带结果的计算。是通过Callable实现的。有3个状态。等待，运行，完成。完成包括所有计算以及以任意的方式结束。包括正确结束，取消和异常。一旦futuretask进入完成状态，会永远停止在这个状态。
 
 future.get依赖于任务状态。如果已经完成，get可以立刻得到返回结果，否则会被阻塞直到任务转入完成状态。然后返回结果或者抛出异常。
+```
 public class Preloader{
 	private final FutureTask<ProductInfo> future = 
 	   new FutureTask<ProductInfo>(new Callable<ProductInfo>{
@@ -164,7 +166,7 @@ public class Preloader{
 	   ...
 	   return future.get();
 }
-
+```
 
 计数信号量(semaphore)用来控制能够同时访问某特定资源的活动的数量，或者同时执行某一给定操作的数量，技术信号量可以用来实现资源池或者给一个容器限定边界。
 一个semaphore管理一个有效的许可集，许可的初始量通过构造函数传递给semaphore。活动就能获得许可，并在使用之后释放许可，如果已经没有可用的许可，那么acquire就会阻塞，知道有可用的为止。release方法向信号量返回一个许可，计算信号量的一种退化形式是二元信号量，一个计数初始值为1的semaphore，二元信号量可用作互斥锁，有不可重入锁的意思。
@@ -182,7 +184,7 @@ Exchanger是关卡的另一种形式，它是一种两步关卡，在关卡点�
 交换的时机取决于应用程序的响应需求，最简单的方案是当写入任务的缓冲写满就发生交换，并且当清除任务的缓冲清空后也发生交换，这样做使交换的次数最少，但是如果新数据的到达率不可预测，处理一些数据会发生延迟。另一个方案是缓冲满了就发生交换，但是当缓冲部分充满却已经存在了特定长时间时，也会发生交换。
 
 NCPU/CPUT+1个线程会产生最优吞吐量。
-
+```
 public class Memorizer<A,V> implements Commputable<A,V>{
 	private final Map<A,Future<V>> cache = new 
 	    ConcurrentHashMap<>();
@@ -206,7 +208,7 @@ public class Memorizer<A,V> implements Commputable<A,V>{
 		return f.get();
 	}
 }
-
+```
 
 32位机器上，主要限制因素是线程栈的地址空间。每个线程都维护着两个执行栈，一个用于java代码，另一个用于原生代码，典型的JVM默认会产生一个组合的栈，大概半兆字节左右（-Xss JVM参数），如果为每个线程分配了大小是232字节的栈，那么你的线程数量将被限制在几千到几万间不等。
 
@@ -236,7 +238,7 @@ TimerTask抛出未检查的异常，Timer会产生无法预料的行为。
 
 Future:任务的状态决定了get方法的行为，如果任务已经完成，get会立即返回或者抛出一个Exception，如果任务没有完成，get会阻塞直到它完成，如果任务抛出了异常，get会把该异常封装成ExecutionException，然后重新抛出。
 FutureTask实现了Runnable。所以既可以提交给Executor执行，也可以调用run方法运行。
-
+```
 void renderPage(){
 	Callable<List<ImageData>> task = new Callable<>(){
 	//...
@@ -252,10 +254,10 @@ void renderPage(){
   		 future.cancel(true);
   		}
 }
-
+```
 
 CompletionService整合了Executor和BlockingQueue的功能，可以将callable任务提交给它去执行，使用类似队列的take和poll方法，结果完整时获得这个结果吗，像个打包的future，ExecutorCompletionService是一个实现类，将计算任务委托给一个executor
-
+```
  void  renderPage(){
    CompletionService = new ExecutorCompletionService(executor);
    completionService.submit(new Callable(){
@@ -266,11 +268,13 @@ CompletionService整合了Executor和BlockingQueue的功能，可以将callable�
  Future<ImageData> f = completionService.take();
  ImageData imageData = f.get();
  renderImage(imageData);
-
+```
 超时的Future
+```
 Future<Ad> f = exec.submit(new FetchAdTask());
 long timeLeft = endNanos - System.nanoTime();
 ad = f.get(timeLeft,NANOSECONDS);
+```
 使用限时的get方法通过future顺序的获取每一个结果
 invokeAll将多个任务提交到一个ExecutorService，并且获得其结果，invokeAll处理一个任务的容器，并且返回一个future的容器，两个容器具有相同的结构，invokeAll将future添加到返回的容器中，这样可以使用任务容器的迭代器，所有任务完成时，调用线程被中断时或者超过时限时，限时版本的invokeAll都会返回结果，超过时限后，任何尚未完成的任务都会被取消，作为invokeAll的返回值，每个任务要么正常的完成，要么被取消。
 
@@ -278,7 +282,7 @@ invokeAll将多个任务提交到一个ExecutorService，并且获得其结果�
 
 静态的interrupted应该小心使用，他会清除并发线程的中断状态。如果你用了interrupted，并且它返回了true，必须对其进行处理，除非你想掩盖这个中断，可以抛出InterruptedException，或者通过再次调用interrupt保存中断状态。
 中断通常是实现取消最明智的选择。
-
+```
 public static void timeRun(Runnable r,long timeout,TimeUnit unit){
 	Future<?> task = taskExec.submit(r);
 	try{
@@ -298,18 +302,18 @@ public void start(){
 		}
 	});
 }
-
+```
 线程池中不应该用ThreadLocal传递任务间的数值
 
 线程池中如果一个任务依赖于其他任务的执行，就可能产生死锁，
 对于一个单线程化的executor，一个任务将另一个任务提交到相同的executor,并等待新提交的任务的结果，这总会引发死锁。如果所有线程执行的任务都阻塞在线程池中，等待着仍然处于同一工作队列的其他任务，那么会发生线程饥饿死锁。
-
+```
 int N_CPU = Runtime.getRuntime().availableProcessors();
-
+```
 newFixedThreadPool为请求的池设置了核心池的大小和最大池的大小，而且池永远不会超时，newCachedThreadPool工厂将最大池的大小设置Integer.MAX_VALUE，核心池的大小设置为零，超时设置为一分钟。
 
 对于庞大或者无限的池，可以使用synchronousQueue，完全绕开队列。
-
+```
 void processInParallel(Executor exec,List<Element> elements){
 	for(final Element e:elements){
 		exec.execute(new Runnable(){
@@ -319,7 +323,7 @@ void processInParallel(Executor exec,List<Element> elements){
 		});
 	}
 }
-
+```
 所有的下载任务都进入到了executor的队列，就会立刻返回。而不用等到这些任务全部完成。如果需要提交一个任务集并等待他们，那么可以使用executorservice.invokeAll,当所有结果都可用后，可以使用completionService获取结果。
 
 数据库检测到一个事务集发生了死锁（通过在表示正在等待关系的有向图上搜索循环），他会选择一个牺牲者，使它退出事务，这个牺牲者释放的资源，使得其他事务能够继续进行。应用程序可以重新执行那个被强行退出的事务，现在这个事务可能就能成功完成了。
@@ -371,7 +375,7 @@ thread.join(LOCKUP_DETECT_TIMEOUT);定时的join能确保测试完成。
 
 
 使用Thread.yield()激发更多的上下文转换
-
+```
 public class BarrierTimer implements Runnable{
 	private boolean started;
 	private long startTime,endTime;
@@ -391,7 +395,7 @@ public class BarrierTimer implements Runnable{
 		return endTime - startTime;
 	}
 }
-
+```
 连接队列的put和take操作允许有比基于数组的队列更好的并发访问，这是因为最佳的链接队列算法允许队列的头和尾彼此独立的更新，由于分配操作通常是线程本地的，算法通过多做一些分配操作可以降低竞争。
 
 如果需要等待一个状态转换的发生，闭锁或者条件等待通常是更好的技术，而不是自旋循环。
@@ -403,11 +407,11 @@ public class BarrierTimer implements Runnable{
 使用tryLock试图获得两个锁，如果不能同时获得两个，就回退，重新尝试，休眠时间由一个特定的组件管理，并由一个随机组件减小活锁发生的可能性。如果一定时间没有能获得所需要的锁，就返回一个失败状态。
 
 定时锁能够在时间预算内设定相应的超时，如果活动在期待的时间内没能获得结果，这个机制使得程序能够提前返回，使用内部锁一旦开始请求，锁就不能停止了。
-
+```
 if(!lock.tryLock(nanosToLock,NANOSECONDS)){
 	return false;
 }
-
+```
 lock.lockInterruptibly() 可中断的锁
 
 ReentrantLock创建公平锁和非公平锁--非公平锁允许闯入，但不是有意鼓励闯入，倘若遇到闯入的发生，他们不会有意避开，公平锁中，如果锁已经被其他线程占有，新的请求线程会加入到等待队列，或者已经有一些线程在等待锁了，在非公平锁中，线程只有当锁正在被占用时才会等待。
@@ -439,7 +443,7 @@ Threa.yield可以给调度器一个提示，我现在可以让出一定的时间
 Object的wait,notify,notifyAll构成了内部条件队列的API
 一个对象的内部锁与它的内部条件队列是相关的。为了调用对象中任一个条件队列方法，必须持有对象锁，因为等待基于状态的条件机制必须和维护状态一致性紧密绑定在一起。除非你能检查状态，否则你不能等待条件。同时除非你能改变状态。否则你不能从条件等待队列中释放其他的线程。
 Object.wait会自动释放锁，请求OS挂起当前线程，让其他线程获得该锁进而修改对象的状态，当它被唤醒时，它会在返回前重新获得锁。
-
+```
 public synchronized void put(V v){
 	while(isFull())
 		wait();
@@ -454,15 +458,15 @@ public synchronized V take(){
 	notifyAll();
 	return v;
 }
-
+```
 wait会释放锁，并阻塞当前线程，然后等待，直到特定时间超时过后，线程被中断或被通知唤醒，线程被唤醒后。wait会在返回运行前重新请求锁，一个从wait方法中唤醒的线程，在重新请求锁的过程没有任何特殊的优先级。
 
 notifyAll唤醒后，控制流重新进入调用wait代码，重新请求与条件队列相关联的锁，在重新请求锁的时刻又再次变为假
-
+```
 while(!conditionPredicate()){
 	lock.wait();
 }
-
+```
 优先使用notifyAll();
 
 二元闭锁：只有初始状态和终止状态。闭锁会阻止线程通过开始阀门，直到阀门被打开。此时所有的线程都可以通过。，但是闭锁阀门一旦被打开就不能再重新关闭。
@@ -490,7 +494,7 @@ volatile不会引起上下文切换和线程调度。但是不能用于构建原
 
 CAS--比较并交换，有3个操作数，内存位置V，旧的预期值A和新值B。当且仅当V符合旧预期值A时，CAS用新值B原子化的更新V的值，否则他什么都不做，都会返回V的知识值。（compare-and-set）
 是一项乐观技术。
-
+```
 public class ConcurrentStack<E> {
 	AtomicReference<Node<E>> top = new AtomicReference<>();
 	public void push(E item){
@@ -522,7 +526,7 @@ public class ConcurrentStack<E> {
 		}
 	}
 }
-
+```
 
 ABA问题是因为在算法中误用比较并交换而引起的反常现象，节点被循环使用（主要存在于不能被垃圾回收的环境中）。CAS的有效请求仍为A么，并且如果成立就继续处理更新，算法中如果进行自身链接节点对象的内存管理，那么就可能出现ABA问题。
 
